@@ -74,8 +74,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Kotlin File" />
         <option value="Kotlin Interface" />
+        <option value="Kotlin File" />
       </list>
     </option>
   </component>
@@ -121,6 +121,7 @@
       <option name="presentableId" value="Default" />
       <updated>1582442402791</updated>
       <workItem from="1582442405394" duration="3007000" />
+      <workItem from="1582979107574" duration="14886000" />
     </task>
     <servers />
   </component>
@@ -128,6 +129,10 @@
     <option name="version" value="1" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="273" y="94" key="#Inspections" timestamp="1582995049147">
+      <screen x="0" y="23" width="1440" height="807" />
+    </state>
+    <state x="273" y="94" key="#Inspections/0.23.1440.807@0.23.1440.807" timestamp="1582995049147" />
     <state x="320" y="115" width="811" height="669" key="#Project_Structure" timestamp="1582443577791">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
@@ -136,10 +141,11 @@
       <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="353" y="382" key="#com.intellij.refactoring.move.MoveHandler.SelectRefactoringDialog/0.0.1440.900@0.0.1440.900" timestamp="1582443935497" />
-    <state x="481" y="5" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1582444755935">
-      <screen x="0" y="0" width="1440" height="900" />
+    <state x="481" y="23" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1582980745444">
+      <screen x="0" y="23" width="1440" height="807" />
     </state>
     <state x="481" y="5" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/0.0.1440.900@0.0.1440.900" timestamp="1582444755935" />
+    <state x="481" y="23" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/0.23.1440.807@0.23.1440.807" timestamp="1582980745444" />
     <state x="474" y="109" width="495" height="681" key="#org.jetbrains.kotlin.idea.refactoring.move.moveDeclarations.ui.MoveKotlinTopLevelDeclarationsDialog" timestamp="1582444787172">
       <screen x="0" y="0" width="1440" height="900" />
     </state>
@@ -148,5 +154,9 @@
       <screen x="0" y="0" width="1440" height="900" />
     </state>
     <state x="97" y="64" key="new project wizard/0.0.1440.900@0.0.1440.900" timestamp="1582442619256" />
+    <state x="165" y="154" width="670" height="676" key="search.everywhere.popup" timestamp="1582994290609">
+      <screen x="0" y="23" width="1440" height="807" />
+    </state>
+    <state x="165" y="154" width="670" height="676" key="search.everywhere.popup/0.23.1440.807@0.23.1440.807" timestamp="1582994290609" />
   </component>
 </project>
