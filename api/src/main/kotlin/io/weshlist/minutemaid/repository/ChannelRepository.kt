@@ -13,8 +13,12 @@ data class Channel(
 )
 
 sealed class ChannelError(override val message: String) : BaseError {
-	data class NotFound(val name: String) : ChannelError("No such Channel Found: $name")
-	data class MalformedName(val name: String) : ChannelError("Malformed Channel name: $name")
+	data class NotFound(val name: String) :
+		ChannelError("No such Channel Found: $name")
+
+	data class MalformedName(val name: String) :
+		ChannelError("Malformed Channel name: $name")
+
 	data class DatabaseError(val name: String, val throwable: Throwable) :
 		ChannelError("Error from Database: ${throwable.message}")
 

@@ -2,6 +2,8 @@
 
 package io.weshlist.minutemaid.result
 
+import kotlin.reflect.KClass
+
 /**
  * A result of a computation that can succeed or fail.
  */
@@ -36,20 +38,6 @@ inline fun <T, Tʹ, E> Result<T, E>.flatMap(f: (T) -> Result<Tʹ, E>): Result<T�
 	}
 
 /**
- * Flat-map a function over the _reason_ of a unsuccessful Result.
- */
-inline fun <T, E, Eʹ> Result<T, E>.flatMapFailure(f: (E) -> Result<T, Eʹ>): Result<T, Eʹ> = when (this) {
-	is Result.Success<T> -> this
-	is Result.Failure<E> -> f(reason)
-}
-
-/**
- * Map a function over the _reason_ of an unsuccessful Result.
- */
-inline fun <T, E, Eʹ> Result<T, E>.mapFailure(f: (E) -> Eʹ): Result<T, Eʹ> =
-	flatMapFailure { reason -> Result.Failure(f(reason)) }
-
-/**
  * Unwrap a Result in which both the success and failure values have the same type, returning a plain value.
  */
 fun <T> Result<T, T>.get() = when (this) {
@@ -60,25 +48,16 @@ fun <T> Result<T, T>.get() = when (this) {
 /**
  * Unwrap a Result, by returning the success value or calling _block_ on failure to abort from the current function.
  */
-inline fun <T, E> Result<T, E>.onFailure(block: (Result.Failure<E>) -> Nothing): T = when (this) {
-	is Result.Success<T> -> value
-	is Result.Failure<E> -> block(this)
+inline fun <T, E> Result<T, E>.onFailure(block: (Result.Failure<E>) -> Nothing): T =
+	when (this) {
+		is Result.Success<T> -> value
+		is Result.Failure<E> -> block(this)
+	}
+
+
+inline fun <T, reified E: Any, Eʹ: E, Eʹʹ: E> Result<T, E>.onFailureWhen(case: KClass<Eʹ>, f: () -> Result<T, Eʹʹ>): Result<T, E> =
+	if (case is E) f() else this
+
+fun <T: Any> T.toSuccess(): Result<T, Nothing> {
+	return Result.Success(this)
 }
-
-/**
- * Unwrap a Result by returning the success value or calling _failureToValue_ to mapping the failure reason to a plain value.
- */
-inline fun <S, T : S, U : S, E> Result<T, E>.recover(errorToValue: (E) -> U): S =
-	mapFailure(errorToValue).get()
-
-/**
- * Perform a side effect with the success value.
- */
-inline fun <T, E> Result<T, E>.peek(f: (T) -> Unit) =
-	apply { if (this is Result.Success<T>) f(value) }
-
-/**
- * Perform a side effect with the failure reason.
- */
-inline fun <T, E> Result<T, E>.peekFailure(f: (E) -> Unit) =
-	apply { if (this is Result.Failure<E>) f(reason) }

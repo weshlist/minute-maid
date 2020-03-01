@@ -1,4 +1,5 @@
 val springBootVersion: String by project
+val kotlinLoggingVersion: String by project
 
 plugins {
 	kotlin("jvm")
@@ -18,6 +19,7 @@ dependencies {
 	implementation(kotlin("stdlib-jdk8"))
 
 	api("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
+	api("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
 
 }
 
