@@ -18,7 +18,9 @@ repositories {
 dependencies {
 	implementation(kotlin("stdlib-jdk8"))
 
+	api("com.fasterxml.jackson.module:jackson-module-kotlin:2.10.+")
 	api("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
+	api("org.springframework.boot:spring-boot-starter-aop:$springBootVersion")
 	api("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
 
 }

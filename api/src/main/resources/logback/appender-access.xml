@@ -1,0 +1,21 @@
+<included>
+    <appender name="ACCESS_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/${phase}-weshlist-minutemaid/access.log</file>
+        <prudent>true</prudent>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/${phase}-weshlist-minutemaid/access.log.%d{yyyy-MM-dd-HH}</fileNamePattern>
+            <maxHistory>168</maxHistory> <!-- 7days -->
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss}|%msg%n</pattern>
+            <immediateFlush>${immediateFlush}</immediateFlush>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC_ACCESS_LOG" class="ch.qos.logback.classic.AsyncAppender">
+        <param name="queueSize" value="1024" />
+        <param name="discardingThreshold" value="10" />
+        <param name="includeCallerData" value="true" />
+        <appender-ref ref="ACCESS_LOG" />
+    </appender>
+</included>

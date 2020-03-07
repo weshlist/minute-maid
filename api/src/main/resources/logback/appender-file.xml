@@ -1,0 +1,22 @@
+<included>
+    <property name="CONSOLE_FILE_LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS}|%highlight(%-4p)|%magenta(%t)|%cyan(%X{tid})|%green(%F:%L) - %msg%n" />
+    <appender name="FILE_CONSOLE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/${phase}-weshlist-minutemaid/spring.log</file>
+        <prudent>true</prudent>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/${phase}-weshlist-minutemaid/spring.log.%d{yyyy-MM-dd-HH}</fileNamePattern>
+            <maxHistory>168</maxHistory> <!-- 7days -->
+        </rollingPolicy>
+        <encoder>
+            <pattern>${CONSOLE_FILE_LOG_PATTERN}</pattern>
+            <immediateFlush>${immediateFlush}</immediateFlush>
+        </encoder>
+    </appender>
+    <appender name="ASYNC_FILE_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
+        <param name="includeCallerData" value="true" />
+        <param name="discardingThreshold" value="10" />
+        <param name="queueSize" value="1024" />
+        <appender-ref ref="FILE_CONSOLE" />
+    </appender>
+</included>
