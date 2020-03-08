@@ -1,11 +1,13 @@
 package io.weshlist.minutemaid.repository.impl
 
+import io.weshlist.minutemaid.model.User
+import io.weshlist.minutemaid.model.mongo.UserPlaylistTable
 import io.weshlist.minutemaid.model.mongo.UserTable
-import io.weshlist.minutemaid.repository.User
-import io.weshlist.minutemaid.repository.UserError
 import io.weshlist.minutemaid.repository.UserRepository
 import io.weshlist.minutemaid.result.Result
+import io.weshlist.minutemaid.result.Result.Failure
 import io.weshlist.minutemaid.result.Result.Success
+import io.weshlist.minutemaid.result.UserError
 import io.weshlist.minutemaid.result.onFailure
 import io.weshlist.minutemaid.result.resultFrom
 import io.weshlist.minutemaid.utils.IdGenerator
@@ -25,16 +27,19 @@ class UserRepositoryImpl(
 
 	private val log = KotlinLogging.logger {}
 
+	/**
+	 * How to process duplicate userName?
+	 */
 	override fun createUser(userName: String): Result<Boolean, UserError> {
-		// Get channel
+		// Get User
 		val newUser = UserTable(
-			userId = idGenerator.generateChannelId(),
+			userId = idGenerator.generateUserId(),
 			userName = userName,
 			profileImageUri = "",
 			playlist = listOf()
 		)
 
-		// Insert Music
+		// Insert User
 		resultFrom {
 			mongoTemplate.insert(newUser)
 		}.onFailure {
@@ -42,7 +47,7 @@ class UserRepositoryImpl(
 				"Error while adding music: ${userName}: ${it.reason.message}, \n" +
 						it.reason.stackTrace.joinToString("\n")
 			)
-			return Result.Failure(UserError.DatabaseError(userName, it.reason))
+			return Failure(UserError.DatabaseError(userName, it.reason))
 		}
 
 		return Success(true)
@@ -52,8 +57,12 @@ class UserRepositoryImpl(
 		TODO()
 	}
 
-	override fun mgetUser(userIdList: List<UserID>): Result<List<User>, UserError> {
-		val findUserQuery = Query(Criteria.where("userId").`in`(userIdList))
+	override fun mgetUser(userIds: List<UserID>): Result<List<User>, UserError> {
+		if (userIds.isEmpty()) {
+			return Failure(UserError.MalformedName("Request id list is empty"))
+		}
+
+		val findUserQuery = Query(Criteria.where("userId").`in`(userIds))
 
 		val resultUserRow =
 			resultFrom {
@@ -63,13 +72,13 @@ class UserRepositoryImpl(
 					"Error while adding getting Users: ${it.reason.message}, \n" +
 							it.reason.stackTrace.joinToString("\n")
 				)
-				return Result.Failure(UserError.DatabaseError(userIdList.first(), it.reason))
+				return Failure(UserError.DatabaseError(userIds.first(), it.reason))
 			}
 
 		return Success(User.fromTableRows(resultUserRow))
 	}
 
-	override fun addMusicToPlaylist(userId: UserID, musicId: MusicID): Result<Boolean, UserError> {
+	override fun requestMusic(userId: UserID, musicId: MusicID): Result<Boolean, UserError> {
 		val findUserQuery = Query(Criteria.where("userId").`is`(userId))
 		val updatePlaylist = Update().apply {
 			push("playlist", musicId)
@@ -83,10 +92,33 @@ class UserRepositoryImpl(
 				"Error while adding music to User's playlist: $userId: ${it.reason.message}, \n" +
 						it.reason.stackTrace.joinToString("\n")
 			)
-			return Result.Failure(UserError.DatabaseError(userId, it.reason))
+			return Failure(UserError.DatabaseError(userId, it.reason))
 		}
 
-		// Duplicate channel name!
 		return Success(true)
+	}
+
+	override fun mgetPlaylist(userIds: List<UserID>): Result<Map<UserID, List<MusicID>>, UserError> {
+		if (userIds.isEmpty()) {
+			return Failure(UserError.MalformedName("Request id list is empty"))
+		}
+
+		val findUserQuery = Query(Criteria.where("userId").`in`(userIds))
+			.apply {
+				fields().include("playlist")
+			}
+
+		val playlist =
+			resultFrom {
+				mongoTemplate.find(findUserQuery, UserPlaylistTable::class.java)
+			}.onFailure {
+				log.error(
+					"Error while adding getting Users: ${it.reason.message}, \n" +
+							it.reason.stackTrace.joinToString("\n")
+				)
+				return Failure(UserError.DatabaseError(userIds.first(), it.reason))
+			}.map { it.userId to it.playlist }.toMap()
+
+		return Success(playlist)
 	}
 }

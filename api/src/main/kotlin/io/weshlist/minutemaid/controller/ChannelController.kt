@@ -1,12 +1,11 @@
 package io.weshlist.minutemaid.controller
 
-import io.weshlist.minutemaid.repository.Channel
-import io.weshlist.minutemaid.repository.Music
+import io.weshlist.minutemaid.model.Channel
+import io.weshlist.minutemaid.model.Music
 import io.weshlist.minutemaid.result.BaseError
 import io.weshlist.minutemaid.result.Result
 import io.weshlist.minutemaid.service.ChannelService
 import io.weshlist.minutemaid.service.MusicSearchService
-import io.weshlist.minutemaid.service.MusicService
 import io.weshlist.minutemaid.service.UserService
 import io.weshlist.minutemaid.utils.ChannelID
 import io.weshlist.minutemaid.utils.PrintLog
@@ -39,8 +38,7 @@ api
 @RequestMapping("/channel")
 class ChannelController(
 	private val channelService: ChannelService,
-	private val musicSearchService: MusicSearchService,
-	private val userService: UserService
+	private val musicSearchService: MusicSearchService
 ) {
 
 	@GetMapping("/{channelName}/join")
@@ -98,23 +96,15 @@ class ChannelController(
 		return searchResult.toResponse()
 	}
 
-	/**
-	 * Request Music from user. Requested Music would be added to channel playlist.
-	 */
-	@PostMapping("/{channelId}/music")
-	fun requestMusic(
-		@PathVariable channelId: ChannelID,
-		@RequestBody requestMusicRequest: RequestMusicReq
-	): RestApiResponse<Boolean, BaseError> {
-
-		val userId = requestMusicRequest.userId
-		val musicId = requestMusicRequest.musicId
+	@GetMapping("/{channelId}/playlist")
+	fun getPlaylist(
+		@PathVariable channelId: ChannelID
+	): RestApiResponse<List<Music>, BaseError> {
 
 		doValidate(
-			ChannelValidator.checkChannelId(channelId),
-			MusicValidator.checkMusicId(musicId)
+			ChannelValidator.checkChannelId(channelId)
 		) onFailure { return Result.Failure(it).toResponse() }
 
-		return userService.addMusicToPlaylist(userId, channelId).toResponse()
+		return channelService.getPlaylist(channelId).toResponse()
 	}
 }

@@ -55,9 +55,22 @@ inline infix fun <T, E> Result<T, E>.onFailure(block: (Result.Failure<E>) -> Not
 	}
 
 
-inline fun <T, reified E: Any, Eʹ: E, Eʹʹ: E> Result<T, E>.onFailureWhen(case: KClass<Eʹ>, f: () -> Result<T, Eʹʹ>): Result<T, E> =
-	if (case is E) f() else this
+inline fun <T, reified E : Any, Eʹ : Any, Eʹʹ : E> Result<T, E>.onFailureWhen(
+	case: KClass<Eʹ>,
+	f: () -> Result<T, Eʹʹ>
+): Result<T, E> {
+	if (this.get() == null) {
+		return this
+	}
+	return if ((this.get()!!)::class == case) f() else this
+}
 
-fun <T: Any> T.toSuccess(): Result<T, Nothing> {
+
+fun <T : Any> T.toSuccess(): Result<T, Nothing> {
 	return Result.Success(this)
 }
+
+fun <E : Any> E.toFailure(): Result<Nothing, E> {
+	return Result.Failure(this)
+}
+

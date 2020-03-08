@@ -1,7 +1,7 @@
 package io.weshlist.minutemaid.service
 
-import io.weshlist.minutemaid.repository.Music
-import io.weshlist.minutemaid.repository.MusicError
+import io.weshlist.minutemaid.model.Music
+import io.weshlist.minutemaid.result.MusicError
 import io.weshlist.minutemaid.result.Result
 import io.weshlist.minutemaid.utils.ChannelID
 import org.springframework.stereotype.Service

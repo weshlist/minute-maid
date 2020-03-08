@@ -1,6 +1,6 @@
 package io.weshlist.minutemaid.controller
 
-import io.weshlist.minutemaid.repository.MusicMeta
+import io.weshlist.minutemaid.model.MusicMeta
 import io.weshlist.minutemaid.utils.MusicID
 import io.weshlist.minutemaid.utils.UserID
 

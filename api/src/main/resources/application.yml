@@ -10,7 +10,7 @@ spring:
 logging:
   group:
     framework: org.springframework
-    library: org.apache, io.netty
+    library: org.apache, io.netty, org.mongodb, de.flapdoodle.embed
     project: io.weshlist.minutemaid
   level:
     framework: INFO

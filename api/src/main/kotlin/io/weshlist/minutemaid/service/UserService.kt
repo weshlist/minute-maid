@@ -1,10 +1,10 @@
 package io.weshlist.minutemaid.service
 
-import io.weshlist.minutemaid.repository.User
-import io.weshlist.minutemaid.repository.UserError
+import io.weshlist.minutemaid.model.User
 import io.weshlist.minutemaid.repository.UserRepository
 import io.weshlist.minutemaid.result.Result
-import io.weshlist.minutemaid.utils.ChannelID
+import io.weshlist.minutemaid.result.UserError
+import io.weshlist.minutemaid.utils.MusicID
 import io.weshlist.minutemaid.utils.UserID
 import org.springframework.stereotype.Service
 
@@ -21,8 +21,8 @@ class UserService (
 		return userRepository.createUser(userName)
 	}
 
-	fun addMusicToPlaylist(userId: UserID, channelId: ChannelID): Result<Boolean, UserError> {
+	fun requestMusic(userId: UserID, musicId: MusicID): Result<Boolean, UserError> {
 
-		return userRepository.addMusicToPlaylist(userId, channelId)
+		return userRepository.requestMusic(userId, musicId)
 	}
 }

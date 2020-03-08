@@ -1,6 +1,6 @@
 package io.weshlist.minutemaid.utils.validator
 
-import io.weshlist.minutemaid.repository.ChannelError
+import io.weshlist.minutemaid.result.ChannelError
 
 object ChannelValidator {
 	fun checkChannelName(channelName: String): ChannelError.MalformedName? {

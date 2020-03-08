@@ -1,6 +1,6 @@
 package io.weshlist.minutemaid.utils.validator
 
-import io.weshlist.minutemaid.repository.UserError
+import io.weshlist.minutemaid.result.UserError
 
 object UserValidator {
 	fun checkUserId(userId: String): UserError.MalformedName? {

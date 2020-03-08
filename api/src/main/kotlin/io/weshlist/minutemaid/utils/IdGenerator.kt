@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicLong
 class IdGenerator {
 	private val channelSeq = AtomicLong(-1L)
 	private val musicSeq = AtomicLong(-1L)
+	private val userSeq = AtomicLong(-1L)
 
 	fun generateChannelId(): String {
 		val newSeq = channelSeq.incrementAndGet()
@@ -18,6 +19,14 @@ class IdGenerator {
 	fun generateMusicId(): String {
 		val newSeq = musicSeq.incrementAndGet()
 
-		return "channel$newSeq"
+		return "music$newSeq"
 	}
+
+	fun generateUserId(): String {
+		val newSeq = userSeq.incrementAndGet()
+
+		return "user$newSeq"
+	}
+
+
 }

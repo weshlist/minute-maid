@@ -41,7 +41,7 @@ class UserController(
 			MusicValidator.checkMusicId(musicId)
 		) onFailure { return Result.Failure(it).toResponse() }
 
-		return userService.addMusicToPlaylist(userId, musicId).toResponse()
+		return userService.requestMusic(userId, musicId).toResponse()
 	}
 
 

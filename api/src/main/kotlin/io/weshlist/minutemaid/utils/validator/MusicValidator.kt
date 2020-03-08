@@ -1,6 +1,6 @@
 package io.weshlist.minutemaid.utils.validator
 
-import io.weshlist.minutemaid.repository.MusicError
+import io.weshlist.minutemaid.result.MusicError
 import io.weshlist.minutemaid.utils.MusicID
 
 object MusicValidator {
