@@ -1,6 +1,14 @@
 package io.weshlist.minutemaid.controller
 
-data class AddMusicRequest (
-	val channelId: String,
-	val musicId: String
+import io.weshlist.minutemaid.repository.MusicMeta
+import io.weshlist.minutemaid.utils.MusicID
+import io.weshlist.minutemaid.utils.UserID
+
+data class RequestMusicReq(
+	val userId: UserID,
+	val musicId: MusicID
+)
+
+data class AddMusicReq (
+	val musicMeta: MusicMeta
 )

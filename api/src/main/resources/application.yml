@@ -1,1 +1,18 @@
 spring.profiles.active: local
+
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: weshlist
+# Logging
+logging:
+  group:
+    framework: org.springframework
+    library: org.apache, io.netty
+    project: io.weshlist.minutemaid
+  level:
+    framework: INFO
+    library: INFO
+    project: DEBUG

@@ -7,8 +7,11 @@ import io.weshlist.minutemaid.result.Result
 import io.weshlist.minutemaid.service.ChannelService
 import io.weshlist.minutemaid.service.MusicSearchService
 import io.weshlist.minutemaid.service.MusicService
+import io.weshlist.minutemaid.service.UserService
+import io.weshlist.minutemaid.utils.ChannelID
 import io.weshlist.minutemaid.utils.PrintLog
 import io.weshlist.minutemaid.utils.RestApiResponse
+import io.weshlist.minutemaid.utils.UserID
 import io.weshlist.minutemaid.utils.toResponse
 import io.weshlist.minutemaid.utils.validator.ChannelValidator
 import io.weshlist.minutemaid.utils.validator.MusicValidator
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 /*
@@ -35,29 +39,51 @@ api
 @RequestMapping("/channel")
 class ChannelController(
 	private val channelService: ChannelService,
-	private val musicService: MusicService,
-	private val musicSearchService: MusicSearchService
+	private val musicSearchService: MusicSearchService,
+	private val userService: UserService
 ) {
 
-	@GetMapping("/join/{channelId}")
+	@GetMapping("/{channelName}/join")
 	fun join(
-		@PathVariable channelId: String
+		@PathVariable channelName: String,
+		@RequestParam userId: UserID
 	): RestApiResponse<Channel, BaseError> {
+		// TODO: ID Generate
 
 		doValidate(
-			ChannelValidator.checkChannelId(channelId)
+			ChannelValidator.checkChannelName(channelName),
+			ChannelValidator.checkUserId(userId)
 		) onFailure { return Result.Failure(it).toResponse() }
 
-		return channelService.join(channelId).toResponse()
+		return channelService.join(userId, channelName).toResponse()
 	}
+
+	@GetMapping("/{channelId}/quit")
+	fun quit(
+		@PathVariable channelId: ChannelID,
+		@RequestParam userId: UserID
+	): RestApiResponse<Boolean, BaseError> {
+		// TODO: ID Generate
+
+		doValidate(
+			ChannelValidator.checkChannelId(channelId),
+			ChannelValidator.checkUserId(userId)
+		) onFailure { return Result.Failure(it).toResponse() }
+
+		return channelService.quit(userId, channelId).toResponse()
+	}
+
 
 	/**
 	 * How about restricting the genre of searchable music by channel?
 	 */
-	@GetMapping("/music/search/{channelId}")
+	@GetMapping("/{channelId}/music/search")
 	fun searchMusic(
-		@PathVariable channelId: String,
-		@PathVariable userId: String
+		@PathVariable channelId: ChannelID,
+		@PathVariable userId: UserID,
+
+		// Need to consider paging.
+		@RequestParam keyword: String? = null
 	): RestApiResponse<List<Music>, BaseError> {
 
 		doValidate(
@@ -65,22 +91,30 @@ class ChannelController(
 			ChannelValidator.checkUserId(userId)
 		) onFailure { return Result.Failure(it).toResponse() }
 
-		return musicSearchService.search(channelId).toResponse()
+		val searchResult = keyword
+			?.let { searchKeyword -> musicSearchService.search(channelId, searchKeyword) }
+			?: musicSearchService.searchAll(channelId)
+
+		return searchResult.toResponse()
 	}
 
-	@PostMapping("/music/add")
-	fun addMusic(
-		@RequestBody addMusicRequest: AddMusicRequest
+	/**
+	 * Request Music from user. Requested Music would be added to channel playlist.
+	 */
+	@PostMapping("/{channelId}/music")
+	fun requestMusic(
+		@PathVariable channelId: ChannelID,
+		@RequestBody requestMusicRequest: RequestMusicReq
 	): RestApiResponse<Boolean, BaseError> {
 
-		val channelId = addMusicRequest.channelId
-		val musicId = addMusicRequest.musicId
+		val userId = requestMusicRequest.userId
+		val musicId = requestMusicRequest.musicId
 
 		doValidate(
 			ChannelValidator.checkChannelId(channelId),
 			MusicValidator.checkMusicId(musicId)
 		) onFailure { return Result.Failure(it).toResponse() }
 
-		return musicService.add(musicId, channelId).toResponse()
+		return userService.addMusicToPlaylist(userId, channelId).toResponse()
 	}
 }

@@ -7,22 +7,29 @@ import io.weshlist.minutemaid.result.Result
 import io.weshlist.minutemaid.result.onFailure
 import io.weshlist.minutemaid.result.onFailureWhen
 import io.weshlist.minutemaid.result.toSuccess
+import io.weshlist.minutemaid.utils.ChannelID
+import io.weshlist.minutemaid.utils.UserID
 import org.springframework.stereotype.Service
 
 @Service
 class ChannelService(
-	val channelRepository: ChannelRepository
+	private val channelRepository: ChannelRepository
 ) {
 
-	fun join(channelId: String): Result<Channel, ChannelError> {
+	fun join(userId: UserID, channelName: String): Result<Channel, ChannelError> {
 
-		return channelRepository.getChannel(channelId)
+		return channelRepository.getChannel(channelName)
 			.onFailureWhen(ChannelError.NotFound::class) {
-				channelRepository.createChannel(channelId)
+				channelRepository.createChannel(userId, channelName)
 			}
 			.onFailure {
 				return it
 			}
 			.toSuccess()
 	}
+
+	fun quit(userId: UserID, channelId: ChannelID): Result<Boolean, ChannelError> {
+		return channelRepository.quitChannel(userId, channelId)
+	}
+
 }

@@ -1,18 +1,38 @@
 package io.weshlist.minutemaid.repository
 
+import io.weshlist.minutemaid.model.mongo.MusicTable
 import io.weshlist.minutemaid.result.BaseError
 import io.weshlist.minutemaid.result.Result
 
 interface MusicRepository {
+	fun getMusic(musicId: String): Result<Music, MusicError>
 	fun getAddableMusicList(channelId: String): Result<List<Music>, MusicError>
-	fun addMusic(id: String): Result<Music, MusicError>
+	fun addMusic(musicMeta: MusicMeta): Result<Boolean, MusicError>
 }
 
 // TODO: Re-define Music model
 data class Music(
-	val name: String,
+	val musicId: String,
+	val musicMeta: MusicMeta
+) {
+	companion object {
+		fun fromTableRow(table: MusicTable): Music {
+			return Music(
+				musicId = table.musicId,
+				musicMeta = MusicMeta(
+					title = table.musicName,
+					artist = table.artist,
+					length = table.length
+				)
+			)
+		}
+	}
+}
+
+data class MusicMeta(
+	val title: String,
 	val artist: String,
-	val length: Int
+	val length: Int // ms
 )
 
 sealed class MusicError(override val message: String) : BaseError {

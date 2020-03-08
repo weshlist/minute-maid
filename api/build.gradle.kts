@@ -6,6 +6,8 @@ plugins {
 	kotlin("kapt")
 	kotlin("plugin.spring")
 	kotlin("plugin.allopen")
+	kotlin("plugin.noarg")
+	kotlin("plugin.jpa")
 	kotlin("plugin.serialization")
 	id("org.springframework.boot")
 	id("idea")
@@ -23,6 +25,9 @@ dependencies {
 	api("org.springframework.boot:spring-boot-starter-aop:$springBootVersion")
 	api("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
 
+	api("org.springframework.boot:spring-boot-starter-data-mongodb:$springBootVersion")
+	// Embedded Database => will be deleted
+	api("de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.2.0")
 }
 
 tasks {

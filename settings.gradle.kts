@@ -14,6 +14,8 @@ pluginManagement {
 				"org.jetbrains.kotlin.plugin.spring" -> useVersion(kotlinVersion)
 				"org.jetbrains.kotlin.plugin.allopen" -> useVersion(kotlinVersion)
 				"org.jetbrains.kotlin.plugin.serialization" -> useVersion(kotlinVersion)
+				"org.jetbrains.kotlin.plugin.noarg" -> useVersion(kotlinVersion)
+				"org.jetbrains.kotlin.plugin.jpa" -> useVersion(kotlinVersion)
 
 				// Spring
 				"org.springframework.boot" -> useVersion(springBootVersion)

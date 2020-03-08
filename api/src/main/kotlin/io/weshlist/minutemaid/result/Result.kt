@@ -48,7 +48,7 @@ fun <T> Result<T, T>.get() = when (this) {
 /**
  * Unwrap a Result, by returning the success value or calling _block_ on failure to abort from the current function.
  */
-inline fun <T, E> Result<T, E>.onFailure(block: (Result.Failure<E>) -> Nothing): T =
+inline infix fun <T, E> Result<T, E>.onFailure(block: (Result.Failure<E>) -> Nothing): T =
 	when (this) {
 		is Result.Success<T> -> value
 		is Result.Failure<E> -> block(this)
