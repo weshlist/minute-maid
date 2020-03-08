@@ -1,14 +1,20 @@
 package io.weshlist.minutemaid.conf
 
 import com.mongodb.MongoClient
+import de.flapdoodle.embed.mongo.Command
 import de.flapdoodle.embed.mongo.MongodExecutable
 import de.flapdoodle.embed.mongo.MongodProcess
 import de.flapdoodle.embed.mongo.MongodStarter
 import de.flapdoodle.embed.mongo.config.IMongodConfig
 import de.flapdoodle.embed.mongo.config.MongodConfigBuilder
 import de.flapdoodle.embed.mongo.config.Net
+import de.flapdoodle.embed.mongo.config.RuntimeConfigBuilder
 import de.flapdoodle.embed.mongo.distribution.Version
+import de.flapdoodle.embed.process.config.io.ProcessOutput
+import de.flapdoodle.embed.process.io.Processors
+import de.flapdoodle.embed.process.io.Slf4jLevel
 import de.flapdoodle.embed.process.runtime.Network
+import mu.KotlinLogging
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.mongodb.core.MongoTemplate
@@ -43,7 +49,20 @@ class EmbeddedMongoConfig {
 
 	@Bean
 	fun mongodStarter(): MongodStarter? {
-		return MongodStarter.getDefaultInstance()
+		val log = KotlinLogging.logger {}
+
+		val processOutput = ProcessOutput(
+			Processors.logTo(log, Slf4jLevel.DEBUG),
+			Processors.logTo(log, Slf4jLevel.ERROR),
+			Processors.logTo(log, Slf4jLevel.DEBUG)
+		)
+
+		val runtimeConfig = RuntimeConfigBuilder()
+			.defaultsWithLogger(Command.MongoD, log)
+			.processOutput(processOutput)
+			.build()
+
+		return MongodStarter.getInstance(runtimeConfig)
 	}
 
 	@Bean(destroyMethod = "stop")

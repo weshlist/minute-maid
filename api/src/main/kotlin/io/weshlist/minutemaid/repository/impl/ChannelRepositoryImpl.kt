@@ -1,7 +1,6 @@
 package io.weshlist.minutemaid.repository.impl
 
 import io.weshlist.minutemaid.model.Channel
-import io.weshlist.minutemaid.model.User
 import io.weshlist.minutemaid.model.mongo.ChannelTable
 import io.weshlist.minutemaid.model.mongo.ChannelUserlistTable
 import io.weshlist.minutemaid.repository.ChannelRepository

@@ -38,7 +38,7 @@ data class MusicTable(
 	var length: Int
 ) : Serializable, Table
 
-@Document(collection = "music")
+@Document(collection = "user")
 data class UserTable(
 	@Id
 	var userId: UserID,

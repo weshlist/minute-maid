@@ -36,11 +36,12 @@ class DatabaseInitialize(
 		 */
 		musicService.add(MusicMeta("합정역 5번 출구", "유산슬", 150))    // music0
 		musicService.add(MusicMeta("사랑의 재개발", "유산슬", 150))      // music1
-		musicService.add(MusicMeta("사랑니", "아이유", 150))          // music3
-		musicService.add(MusicMeta("분홍신", "아이유", 150))          // music4
-		musicService.add(MusicMeta("기차를 타고", "아이유", 150))      // music5
-		musicService.add(MusicMeta("금요일에 만나요", "아이유", 150))      // music6
-		musicService.add(MusicMeta("이태원 프리덤", "UV", 150))      // music7
+		musicService.add(MusicMeta("사랑니", "아이유", 150))          // music2
+		musicService.add(MusicMeta("분홍신", "아이유", 150))          // music3
+		musicService.add(MusicMeta("기차를 타고", "아이유", 150))      // music4
+		musicService.add(MusicMeta("금요일에 만나요", "아이유", 150))      // music5
+		musicService.add(MusicMeta("이태원 프리덤", "UV", 150))      // music6
+		musicService.add(MusicMeta("하루끝", "아이유", 150))      // music7
 
 		println(musicService.mget(listOf("music0", "music1")))
 
