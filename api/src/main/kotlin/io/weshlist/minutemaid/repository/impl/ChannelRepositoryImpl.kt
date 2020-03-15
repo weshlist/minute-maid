@@ -1,8 +1,10 @@
 package io.weshlist.minutemaid.repository.impl
 
 import io.weshlist.minutemaid.model.Channel
+import io.weshlist.minutemaid.model.M3u8
 import io.weshlist.minutemaid.model.mongo.ChannelTable
 import io.weshlist.minutemaid.model.mongo.ChannelUserlistTable
+import io.weshlist.minutemaid.model.mongo.M3u8Table
 import io.weshlist.minutemaid.repository.ChannelRepository
 import io.weshlist.minutemaid.result.ChannelError
 import io.weshlist.minutemaid.result.Result
@@ -19,6 +21,10 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class ChannelRepositoryImpl(
 	private val idGenerator: IdGenerator,
@@ -74,6 +80,8 @@ class ChannelRepositoryImpl(
 			return Failure(ChannelError.DatabaseError(channelName, it.reason))
 		}
 
+		createM3u8(newChannel.channelId)
+
 		// Duplicate channel name!
 		return Success(Channel.fromTableRow(newChannel))
 	}
@@ -102,5 +110,57 @@ class ChannelRepositoryImpl(
 			}.userlist
 
 		return Success(userlist)
+	}
+
+	override fun getM3u8(channelId: ChannelID): Result<M3u8, ChannelError> {
+		val getM3u8Query = Query(Criteria.where("channelId").`is`(channelId))
+
+		val resultM3u8Row =
+			resultFrom {
+				mongoTemplate.findOne(getM3u8Query, M3u8Table::class.java)
+					?: return Failure(ChannelError.NotFound(channelId))
+			}.onFailure {
+				log.error(
+						"Error while get channel: ${it.reason.message}, \n" +
+								it.reason.stackTrace.joinToString("\n")
+				)
+				return Failure(ChannelError.DatabaseError(channelId, it.reason))
+			}
+
+		val timestamp = LocalDateTime.parse(resultM3u8Row.timestamp, DateTimeFormatter.ISO_DATE_TIME).plusSeconds(10)
+		val now = LocalDateTime.now()
+
+		if(now.isAfter(timestamp)){
+			patchM3u8(channelId)
+		}
+
+		return Success(M3u8.fromTableRow(resultM3u8Row))
+	}
+
+	override fun patchM3u8(channelId: ChannelID): Result<M3u8, ChannelError> {
+		TODO("not implemented")
+	}
+
+	override fun createM3u8(channelId: ChannelID): Result<M3u8, ChannelError> {
+		val now = LocalDateTime.now()
+		val newM3u8 = M3u8Table(
+			channelId = channelId,
+			ts0 = "1",
+			ts1 = "2",
+			ts2 = "3",
+			timestamp = now.format(DateTimeFormatter.ISO_DATE_TIME)
+		)
+
+		resultFrom {
+			mongoTemplate.insert(newM3u8)
+		}.onFailure {
+			log.error(
+					"Error while creating channel $channelId: ${it.reason.message}, \n" +
+							it.reason.stackTrace.joinToString("\n")
+			)
+			return Failure(ChannelError.DatabaseError(channelId, it.reason))
+		}
+
+		return Success(M3u8.fromTableRow(newM3u8))
 	}
 }

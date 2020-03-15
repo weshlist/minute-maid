@@ -7,6 +7,7 @@ import io.weshlist.minutemaid.utils.UserID
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.io.Serializable
+import java.sql.Timestamp
 
 interface Table
 
@@ -54,3 +55,12 @@ data class UserPlaylistTable(
 	var playlist: List<MusicID>
 ) : Serializable, Table
 
+@Document(collection = "channel")
+data class M3u8Table(
+	@Id
+	var channelId: ChannelID,
+	var ts0: String,
+	var ts1: String,
+	var ts2: String,
+	var timestamp: String
+) : Serializable, Table

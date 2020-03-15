@@ -1,12 +1,11 @@
 package io.weshlist.minutemaid.model
 
-import io.weshlist.minutemaid.model.mongo.ChannelTable
-import io.weshlist.minutemaid.model.mongo.MusicTable
-import io.weshlist.minutemaid.model.mongo.Table
-import io.weshlist.minutemaid.model.mongo.UserTable
+import io.weshlist.minutemaid.model.mongo.*
 import io.weshlist.minutemaid.utils.ChannelID
 import io.weshlist.minutemaid.utils.MusicID
 import io.weshlist.minutemaid.utils.UserID
+import org.springframework.data.annotation.Id
+import java.sql.Timestamp
 
 interface ConvertTable<T : Table, M> {
 	fun fromTableRow(table: T): M
@@ -39,6 +38,35 @@ data class Channel(
 		}
 
 		override fun fromTableRows(tables: List<ChannelTable>): List<Channel> {
+			return tables.map(::fromTableRow)
+		}
+	}
+}
+
+/**
+ * M3U8
+ */
+data class M3u8(
+	@Id
+	var channelId: ChannelID,
+	var ts0: String,
+	var ts1: String,
+	var ts2: String,
+	var timestamp: String
+) {
+	companion object : ConvertTable<M3u8Table, M3u8> {
+		override fun fromTableRow(table: M3u8Table): M3u8 {
+			// TOOD: currentMusic & playlist are needed to be update
+			return M3u8(
+					channelId = table.channelId,
+					ts0 = table.ts0,
+					ts1 = table.ts1,
+					ts2 = table.ts2,
+					timestamp = table.timestamp
+			)
+		}
+
+		override fun fromTableRows(tables: List<M3u8Table>): List<M3u8> {
 			return tables.map(::fromTableRow)
 		}
 	}

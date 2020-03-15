@@ -1,6 +1,7 @@
 package io.weshlist.minutemaid.controller
 
 import io.weshlist.minutemaid.model.Channel
+import io.weshlist.minutemaid.model.M3u8
 import io.weshlist.minutemaid.model.Music
 import io.weshlist.minutemaid.result.BaseError
 import io.weshlist.minutemaid.result.Result
@@ -102,5 +103,17 @@ class ChannelController(
 		) onFailure { return Result.Failure(it).toResponse() }
 
 		return channelService.getPlaylist(channelId).toResponse()
+	}
+
+	@GetMapping("/{channelId}/m3u8")
+	fun getM3u8(
+		@PathVariable channelId: ChannelID
+	): RestApiResponse<M3u8, BaseError> {
+
+		doValidate(
+				ChannelValidator.checkChannelId(channelId)
+		) onFailure { return Result.Failure(it).toResponse() }
+
+		return channelService.getM3u8(channelId).toResponse()
 	}
 }

@@ -2,6 +2,7 @@ package io.weshlist.minutemaid.service
 
 import io.weshlist.minutemaid.model.Channel
 import io.weshlist.minutemaid.model.Music
+import io.weshlist.minutemaid.model.M3u8
 import io.weshlist.minutemaid.repository.ChannelRepository
 import io.weshlist.minutemaid.repository.MusicRepository
 import io.weshlist.minutemaid.repository.UserRepository
@@ -52,4 +53,9 @@ class ChannelService(
 		return Success(playlist)
 	}
 
+	fun getM3u8(channelId: ChannelID): Result<M3u8, BaseError> {
+		val m3u8 = channelRepository.getM3u8(channelId).onFailure { return it }
+
+		return Success(m3u8)
+	}
 }
