@@ -20,7 +20,11 @@ data class ChannelTable(
 	var currentMusicId: MusicID?,
 	var playlist: List<Music>,
 	var userlist: List<UserID>,
-	var streamingUri: String = "wesh://streaming-uri/gg"
+	var streamingUri: String = "wesh://streaming-uri/gg",
+	var ts0: String,
+	var ts1: String,
+	var ts2: String,
+	var timestamp: String
 ) : Serializable, Table
 
 @Document(collection = "channel")

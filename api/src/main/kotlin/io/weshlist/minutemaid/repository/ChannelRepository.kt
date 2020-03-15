@@ -20,6 +20,4 @@ interface ChannelRepository {
 	fun getM3u8(channelId: ChannelID): Result<M3u8, ChannelError>
 
 	fun patchM3u8(channelId: ChannelID): Result<M3u8, ChannelError>
-
-	fun createM3u8(channelId: ChannelID): Result<M3u8, ChannelError>
 }

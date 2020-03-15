@@ -59,6 +59,7 @@ class ChannelRepositoryImpl(
 	override fun createChannel(userId: UserID, channelName: String): Result<Channel, ChannelError> {
 
 		// Get channel
+		val now = LocalDateTime.now()
 		val newChannel = ChannelTable(
 			channelId = idGenerator.generateChannelId(),
 			channelName = channelName,
@@ -66,7 +67,11 @@ class ChannelRepositoryImpl(
 			currentMusicId = null,
 			playlist = listOf(),
 			userlist = listOf(userId),
-			streamingUri = ""
+			streamingUri = "",
+			ts0 = "1",
+			ts1 = "2",
+			ts2 = "3",
+			timestamp = now.format(DateTimeFormatter.ISO_DATE_TIME)
 		)
 
 		// Insert Channel
@@ -79,8 +84,6 @@ class ChannelRepositoryImpl(
 			)
 			return Failure(ChannelError.DatabaseError(channelName, it.reason))
 		}
-
-		createM3u8(newChannel.channelId)
 
 		// Duplicate channel name!
 		return Success(Channel.fromTableRow(newChannel))
@@ -131,7 +134,7 @@ class ChannelRepositoryImpl(
 		val now = LocalDateTime.now()
 
 		if(now.isAfter(timestamp)){
-			patchM3u8(channelId)
+			//patchM3u8(channelId)
 		}
 
 		return Success(M3u8.fromTableRow(resultM3u8Row))
@@ -139,28 +142,5 @@ class ChannelRepositoryImpl(
 
 	override fun patchM3u8(channelId: ChannelID): Result<M3u8, ChannelError> {
 		TODO("not implemented")
-	}
-
-	override fun createM3u8(channelId: ChannelID): Result<M3u8, ChannelError> {
-		val now = LocalDateTime.now()
-		val newM3u8 = M3u8Table(
-			channelId = channelId,
-			ts0 = "1",
-			ts1 = "2",
-			ts2 = "3",
-			timestamp = now.format(DateTimeFormatter.ISO_DATE_TIME)
-		)
-
-		resultFrom {
-			mongoTemplate.insert(newM3u8)
-		}.onFailure {
-			log.error(
-					"Error while creating channel $channelId: ${it.reason.message}, \n" +
-							it.reason.stackTrace.joinToString("\n")
-			)
-			return Failure(ChannelError.DatabaseError(channelId, it.reason))
-		}
-
-		return Success(M3u8.fromTableRow(newM3u8))
 	}
 }

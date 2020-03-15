@@ -20,7 +20,7 @@ class FileController (
     ): ResponseEntity<Resource> {
         val file = fileService.loadFile(fileName)
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "test filename=\"" + fileName + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "filename=\"" + fileName + "\"")
                 .body(file)
     }
 }
