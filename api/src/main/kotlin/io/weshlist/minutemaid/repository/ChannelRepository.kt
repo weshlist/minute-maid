@@ -18,6 +18,4 @@ interface ChannelRepository {
 	fun getUserList(channelId: ChannelID): Result<List<UserID>, ChannelError>
 
 	fun getM3u8(channelId: ChannelID): Result<M3u8, ChannelError>
-
-	fun patchM3u8(channelId: ChannelID): Result<M3u8, ChannelError>
 }

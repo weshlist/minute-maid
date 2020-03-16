@@ -49,9 +49,7 @@ data class Channel(
 data class M3u8(
 	@Id
 	var channelId: ChannelID,
-	var ts0: String,
-	var ts1: String,
-	var ts2: String,
+	var streamingFileList: List<String>,
 	var timestamp: String
 ) {
 	companion object : ConvertTable<M3u8Table, M3u8> {
@@ -59,9 +57,7 @@ data class M3u8(
 			// TOOD: currentMusic & playlist are needed to be update
 			return M3u8(
 					channelId = table.channelId,
-					ts0 = table.ts0,
-					ts1 = table.ts1,
-					ts2 = table.ts2,
+					streamingFileList = table.streamingFileList,
 					timestamp = table.timestamp
 			)
 		}

@@ -21,9 +21,7 @@ data class ChannelTable(
 	var playlist: List<Music>,
 	var userlist: List<UserID>,
 	var streamingUri: String = "wesh://streaming-uri/gg",
-	var ts0: String,
-	var ts1: String,
-	var ts2: String,
+	var streamingFileList: List<String>,
 	var timestamp: String
 ) : Serializable, Table
 
@@ -63,8 +61,6 @@ data class UserPlaylistTable(
 data class M3u8Table(
 	@Id
 	var channelId: ChannelID,
-	var ts0: String,
-	var ts1: String,
-	var ts2: String,
+	var streamingFileList: List<String>,
 	var timestamp: String
 ) : Serializable, Table

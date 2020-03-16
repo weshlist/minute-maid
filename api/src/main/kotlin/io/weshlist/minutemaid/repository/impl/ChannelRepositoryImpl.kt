@@ -58,21 +58,19 @@ class ChannelRepositoryImpl(
 
 	override fun createChannel(userId: UserID, channelName: String): Result<Channel, ChannelError> {
 
-		// Get channel
-		val now = LocalDateTime.now()
-		val newChannel = ChannelTable(
-			channelId = idGenerator.generateChannelId(),
-			channelName = channelName,
-			channelCreator = userId,
-			currentMusicId = null,
-			playlist = listOf(),
-			userlist = listOf(userId),
-			streamingUri = "",
-			ts0 = "1",
-			ts1 = "2",
-			ts2 = "3",
-			timestamp = now.format(DateTimeFormatter.ISO_DATE_TIME)
-		)
+        // Get channel
+        val now = LocalDateTime.now()
+        val newChannel = ChannelTable(
+                channelId = idGenerator.generateChannelId(),
+                channelName = channelName,
+                channelCreator = userId,
+                currentMusicId = null,
+                playlist = listOf(),
+                userlist = listOf(userId),
+                streamingUri = "",
+                streamingFileList = listOf("sample_0.ts", "sample_1.ts", "sample_2.ts"),
+                timestamp = now.format(DateTimeFormatter.ISO_DATE_TIME)
+        )
 
 		// Insert Channel
 		resultFrom {
@@ -133,14 +131,47 @@ class ChannelRepositoryImpl(
 		val timestamp = LocalDateTime.parse(resultM3u8Row.timestamp, DateTimeFormatter.ISO_DATE_TIME).plusSeconds(10)
 		val now = LocalDateTime.now()
 
-		if(now.isAfter(timestamp)){
-			//patchM3u8(channelId)
-		}
+        if (now.isAfter(timestamp.plusSeconds(10))) {
+            return patchM3u8(resultM3u8Row, channelId)
+        }
 
 		return Success(M3u8.fromTableRow(resultM3u8Row))
 	}
 
-	override fun patchM3u8(channelId: ChannelID): Result<M3u8, ChannelError> {
-		TODO("not implemented")
-	}
+    // only for test
+    private fun patchM3u8(resultM3u8Row: M3u8Table, channelId: ChannelID): Result<M3u8, ChannelError> {
+        val tsList: List<String> = listOf("sample_0.ts", "sample_1.ts", "sample_2.ts", "sample_3.ts", "sample_4.ts")
+        val popFileList = Update().apply {
+            pop("streamingFileList", Update.Position.FIRST)
+        }
+
+        val pushFileList = Update().apply {
+            val index = (tsList.indexOf(resultM3u8Row.streamingFileList.get(resultM3u8Row.streamingFileList.size - 1)) + 1) % 5
+            push("streamingFileList", tsList.get(index))
+        }
+
+        val resetTimestamp = Update().set("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
+
+        val getChannelQuery = Query(Criteria.where("channelId").`is`(channelId))
+        val option = FindAndModifyOptions().returnNew(true)
+
+        val resultM3u8Row =
+                resultFrom {
+                    mongoTemplate.updateFirst(getChannelQuery, popFileList, M3u8Table::class.java)
+                            ?: return Failure(ChannelError.NotFound(channelId))
+                    mongoTemplate.updateFirst(getChannelQuery, resetTimestamp, M3u8Table::class.java)
+                            ?: return Failure(ChannelError.NotFound(channelId))
+                    mongoTemplate.findAndModify(getChannelQuery, pushFileList, option, M3u8Table::class.java)
+                            ?: return Failure(ChannelError.NotFound(channelId))
+                }.onFailure {
+                    log.error(
+                            "Error while patch m3u8: ${it.reason.message}, \n" +
+                                    it.reason.stackTrace.joinToString("\n")
+                    )
+                    return Failure(ChannelError.DatabaseError(channelId, it.reason))
+                }
+
+        return Success(M3u8.fromTableRow(resultM3u8Row))
+    }
+
 }
