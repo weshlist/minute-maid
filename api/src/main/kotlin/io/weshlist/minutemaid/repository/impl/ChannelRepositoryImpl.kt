@@ -141,27 +141,22 @@ class ChannelRepositoryImpl(
     // only for test
     private fun patchM3u8(resultM3u8Row: M3u8Table, channelId: ChannelID): Result<M3u8, ChannelError> {
         val tsList: List<String> = listOf("sample_0.ts", "sample_1.ts", "sample_2.ts", "sample_3.ts", "sample_4.ts")
-        val popFileList = Update().apply {
-            pop("streamingFileList", Update.Position.FIRST)
-        }
 
-        val pushFileList = Update().apply {
-            val index = (tsList.indexOf(resultM3u8Row.streamingFileList.get(resultM3u8Row.streamingFileList.size - 1)) + 1) % 5
-            push("streamingFileList", tsList.get(index))
-        }
+		val list: MutableList<String> = mutableListOf(resultM3u8Row.streamingFileList[1], resultM3u8Row.streamingFileList[2])
+		list.add(tsList[tsList.indexOf(resultM3u8Row.streamingFileList[2]) + 1 % 5])
 
-        val resetTimestamp = Update().set("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
+		val resetTimestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
+
+		val update = Update()
+		update.set("streamingFileList", list)
+		update.set("timestamp", resetTimestamp)
 
         val getChannelQuery = Query(Criteria.where("channelId").`is`(channelId))
         val option = FindAndModifyOptions().returnNew(true)
 
         val resultM3u8Row =
                 resultFrom {
-                    mongoTemplate.updateFirst(getChannelQuery, popFileList, M3u8Table::class.java)
-                            ?: return Failure(ChannelError.NotFound(channelId))
-                    mongoTemplate.updateFirst(getChannelQuery, resetTimestamp, M3u8Table::class.java)
-                            ?: return Failure(ChannelError.NotFound(channelId))
-                    mongoTemplate.findAndModify(getChannelQuery, pushFileList, option, M3u8Table::class.java)
+                    mongoTemplate.findAndModify(getChannelQuery, update, option, M3u8Table::class.java)
                             ?: return Failure(ChannelError.NotFound(channelId))
                 }.onFailure {
                     log.error(
