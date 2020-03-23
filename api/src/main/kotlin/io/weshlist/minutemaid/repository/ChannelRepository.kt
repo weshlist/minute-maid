@@ -18,4 +18,6 @@ interface ChannelRepository {
 	fun getUserList(channelId: ChannelID): Result<List<UserID>, ChannelError>
 
 	fun getM3u8(channelId: ChannelID): Result<M3u8, ChannelError>
+
+	fun getM3u8Format(m3u8: M3u8): Result<String, ChannelError>
 }

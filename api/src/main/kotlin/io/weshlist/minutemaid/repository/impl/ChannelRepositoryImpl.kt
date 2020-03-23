@@ -143,7 +143,8 @@ class ChannelRepositoryImpl(
         val tsList: List<String> = listOf("sample_0.ts", "sample_1.ts", "sample_2.ts", "sample_3.ts", "sample_4.ts")
 
 		val list: MutableList<String> = mutableListOf(resultM3u8Row.streamingFileList[1], resultM3u8Row.streamingFileList[2])
-		list.add(tsList[tsList.indexOf(resultM3u8Row.streamingFileList[2]) + 1 % 5])
+		System.out.println(tsList.indexOf(resultM3u8Row.streamingFileList[2]))
+		list.add(tsList[(tsList.indexOf(resultM3u8Row.streamingFileList[2]) + 1) % 5])
 
 		val resetTimestamp = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
 
@@ -169,4 +170,17 @@ class ChannelRepositoryImpl(
         return Success(M3u8.fromTableRow(resultM3u8Row))
     }
 
+	override fun getM3u8Format(m3u8: M3u8): Result<String, ChannelError> {
+		val returnStr = StringBuilder()
+		returnStr.append("#EXTM3U\n")
+				.append("#EXTINF:10,\n")
+				.append("http://127.0.0.1:8080/download/" + m3u8.streamingFileList[0] + "\n")
+				.append("#EXTINF:10,\n")
+				.append("http://127.0.0.1:8080/download/" + m3u8.streamingFileList[1] + "\n")
+				.append("#EXTINF:10,\n")
+				.append("http://127.0.0.1:8080/download/" + m3u8.streamingFileList[2] + "\n")
+				.append("#EXT-X-ENDLIST")
+
+		return Success(returnStr.toString())
+	}
 }

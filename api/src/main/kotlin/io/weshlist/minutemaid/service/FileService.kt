@@ -21,7 +21,6 @@ class FileService(
         val filePath = rootLocation.resolve(fileName)
         val resource = UrlResource(filePath.toUri())
 
-        System.out.println(resource)
         if (resource.exists() && resource.isReadable) {
             return resource
         } else {

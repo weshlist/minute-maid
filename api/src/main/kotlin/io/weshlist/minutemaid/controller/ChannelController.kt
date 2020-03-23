@@ -111,7 +111,7 @@ class ChannelController(
 	@GetMapping("/{channelId}/m3u8")
 	fun getM3u8(
 		@PathVariable channelId: ChannelID
-	): RestApiResponse<M3u8, BaseError> {
+	): RestApiResponse<String, BaseError> {
 
 		doValidate(
 				ChannelValidator.checkChannelId(channelId)

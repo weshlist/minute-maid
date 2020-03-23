@@ -53,9 +53,11 @@ class ChannelService(
 		return Success(playlist)
 	}
 
-	fun getM3u8(channelId: ChannelID): Result<M3u8, BaseError> {
+	fun getM3u8(channelId: ChannelID): Result<String, BaseError> {
 		val m3u8 = channelRepository.getM3u8(channelId).onFailure { return it }
 
-		return Success(m3u8)
+		val m3u8String = channelRepository.getM3u8Format(m3u8).onFailure { return it }
+
+		return Success(m3u8String)
 	}
 }
