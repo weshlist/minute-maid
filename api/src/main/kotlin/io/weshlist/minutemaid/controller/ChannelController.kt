@@ -17,6 +17,8 @@ import io.weshlist.minutemaid.utils.validator.doValidate
 import io.weshlist.minutemaid.utils.validator.onFailure
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -38,12 +40,13 @@ class ChannelController(
 	private val musicSearchService: MusicSearchService
 ) {
 
-	@GetMapping("/{channelName}/join")
+	@PostMapping("/{channelName}/join")
 	fun join(
 		@PathVariable channelName: String,
-		@RequestParam userId: UserID
+		@RequestBody joinChannelRequest: JoinChannelRequest
 	): RestApiResponse<Channel, BaseError> {
 		// TODO: ID Generate
+		val userId = joinChannelRequest.userId
 
 		doValidate(
 			ChannelValidator.checkChannelName(channelName),

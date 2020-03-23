@@ -40,9 +40,9 @@ inline fun <T, Tʹ, E> Result<T, E>.flatMap(f: (T) -> Result<Tʹ, E>): Result<T�
 /**
  * Unwrap a Result in which both the success and failure values have the same type, returning a plain value.
  */
-fun <T> Result<T, T>.get() = when (this) {
+fun <T, E> Result<T, E>.get() = when (this) {
 	is Result.Success<T> -> value
-	is Result.Failure<T> -> reason
+	is Result.Failure<E> -> reason
 }
 
 /**
