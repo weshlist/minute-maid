@@ -1,0 +1,15 @@
+<included>
+    <property name="CONSOLE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS}|%highlight(%-4p)|%magenta(%t)|%cyan(%X{tid})|%green(%F:%L) - %msg%n"/>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <immediateFlush>${immediateFlush}</immediateFlush>
+        </encoder>
+    </appender>
+    <appender name="ASYNC_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
+        <param name="includeCallerData" value="true"/>
+        <param name="discardingThreshold" value="10" />
+        <param name="queueSize" value="1024" />
+        <appender-ref ref="CONSOLE" />
+    </appender>
+</included>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE configuration>
+<configuration>
+    <property name="immediateFlush" value="true"/>
+    <springProperty scope="context" name="phase" source="spring.profiles.active" defaultValue="local" />
+
+    <include resource="logback/appender-file.xml" />
+    <include resource="logback/appender-console.xml" />
+    <include resource="logback/appender-access.xml" />
+
+    <springProfile name="local">
+        <root level="DEBUG">
+            <appender-ref ref="ASYNC_CONSOLE" />
+        </root>
+    </springProfile>
+
+    <springProfile name="!local">
+        <root level="INFO">
+            <appender-ref ref="ASYNC_FILE_CONSOLE" />
+        </root>
+    </springProfile>
+
+    <logger name="access" additivity="false">
+        <springProfile name="local">
+            <appender-ref ref="ASYNC_CONSOLE" />
+        </springProfile>
+
+        <springProfile name="!local">
+            <appender-ref ref="ASYNC_ACCESS_LOG" />
+        </springProfile>
+    </logger>
+
+</configuration>
