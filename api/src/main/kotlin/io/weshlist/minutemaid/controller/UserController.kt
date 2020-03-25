@@ -1,5 +1,6 @@
 package io.weshlist.minutemaid.controller
 
+import io.weshlist.minutemaid.controller.params.RequestMusicReq
 import io.weshlist.minutemaid.result.BaseError
 import io.weshlist.minutemaid.result.Result
 import io.weshlist.minutemaid.service.UserService
@@ -7,6 +8,7 @@ import io.weshlist.minutemaid.utils.PrintLog
 import io.weshlist.minutemaid.utils.RestApiResponse
 import io.weshlist.minutemaid.utils.UserID
 import io.weshlist.minutemaid.utils.toResponse
+import io.weshlist.minutemaid.utils.validator.ChannelValidator
 import io.weshlist.minutemaid.utils.validator.MusicValidator
 import io.weshlist.minutemaid.utils.validator.UserValidator
 import io.weshlist.minutemaid.utils.validator.doValidate
@@ -33,14 +35,16 @@ class UserController(
 		@RequestBody requestMusicRequest: RequestMusicReq
 	): RestApiResponse<Boolean, BaseError> {
 
+		val channelId = requestMusicRequest.channelId
 		val musicId = requestMusicRequest.musicId
 
 		doValidate(
 			UserValidator.checkUserId(userId),
+			ChannelValidator.checkChannelId(channelId),
 			MusicValidator.checkMusicId(musicId)
 		) onFailure { return Result.Failure(it).toResponse() }
 
-		return userService.requestMusic(userId, musicId).toResponse()
+		return userService.requestMusic(channelId, userId, musicId).toResponse()
 	}
 
 

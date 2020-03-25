@@ -1,10 +1,11 @@
 package io.weshlist.minutemaid.repository.impl
 
 import io.weshlist.minutemaid.model.Channel
-import io.weshlist.minutemaid.model.M3u8
+import io.weshlist.minutemaid.model.ChannelMusicStatus
+import io.weshlist.minutemaid.model.mongo.ChannelMusicStatusTable
+import io.weshlist.minutemaid.model.mongo.ChannelPlaylistTable
 import io.weshlist.minutemaid.model.mongo.ChannelTable
 import io.weshlist.minutemaid.model.mongo.ChannelUserlistTable
-import io.weshlist.minutemaid.model.mongo.M3u8Table
 import io.weshlist.minutemaid.repository.ChannelRepository
 import io.weshlist.minutemaid.result.ChannelError
 import io.weshlist.minutemaid.result.Result
@@ -14,6 +15,7 @@ import io.weshlist.minutemaid.result.onFailure
 import io.weshlist.minutemaid.result.resultFrom
 import io.weshlist.minutemaid.utils.ChannelID
 import io.weshlist.minutemaid.utils.IdGenerator
+import io.weshlist.minutemaid.utils.MusicID
 import io.weshlist.minutemaid.utils.UserID
 import mu.KotlinLogging
 import org.springframework.data.mongodb.core.FindAndModifyOptions
@@ -21,10 +23,7 @@ import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
-import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class ChannelRepositoryImpl(
 	private val idGenerator: IdGenerator,
@@ -32,6 +31,7 @@ class ChannelRepositoryImpl(
 ) : ChannelRepository {
 	private val log = KotlinLogging.logger { }
 
+	//TODO: Replace mongo column into Enum value
 	override fun getChannel(userId: UserID, channelName: String): Result<Channel, ChannelError> {
 
 		// Get channel
@@ -50,6 +50,7 @@ class ChannelRepositoryImpl(
 					"Error while get channel: ${it.reason.message}, \n" +
 							it.reason.stackTrace.joinToString("\n")
 				)
+
 				return Failure(ChannelError.DatabaseError(channelName, it.reason))
 			}
 
@@ -58,19 +59,17 @@ class ChannelRepositoryImpl(
 
 	override fun createChannel(userId: UserID, channelName: String): Result<Channel, ChannelError> {
 
-        // Get channel
-        val now = LocalDateTime.now()
-        val newChannel = ChannelTable(
-                channelId = idGenerator.generateChannelId(),
-                channelName = channelName,
-                channelCreator = userId,
-                currentMusicId = null,
-                playlist = listOf(),
-                userlist = listOf(userId),
-                streamingUri = "",
-                streamingFileList = listOf("sample_0.ts", "sample_1.ts", "sample_2.ts"),
-                timestamp = now.format(DateTimeFormatter.ISO_DATE_TIME)
-        )
+		// Get channel
+		val now = LocalDateTime.now()
+		val newChannel = ChannelTable(
+			channelId = idGenerator.generateChannelId(),
+			channelName = channelName,
+			channelCreator = userId,
+			playlist = listOf(),
+			userlist = listOf(userId),
+			currentMusicId = null,
+			currentMusicStartTime = null
+		)
 
 		// Insert Channel
 		resultFrom {
@@ -80,6 +79,7 @@ class ChannelRepositoryImpl(
 				"Error while creating channel $channelName: ${it.reason.message}, \n" +
 						it.reason.stackTrace.joinToString("\n")
 			)
+
 			return Failure(ChannelError.DatabaseError(channelName, it.reason))
 		}
 
@@ -107,39 +107,112 @@ class ChannelRepositoryImpl(
 					"Error while get channel: ${it.reason.message}, \n" +
 							it.reason.stackTrace.joinToString("\n")
 				)
+
 				return Failure(ChannelError.DatabaseError(channelId, it.reason))
 			}.userlist
 
 		return Success(userlist)
 	}
 
-	override fun getM3u8(channelId: ChannelID): Result<M3u8, ChannelError> {
-		val getM3u8Query = Query(Criteria.where("channelId").`is`(channelId))
+	override fun getPlaylist(channelId: ChannelID): Result<List<MusicID>, ChannelError> {
+		// Get channel
+		val getPlaylistQuery = Query(Criteria.where("channelId").`is`(channelId))
+			.apply {
+				fields().include("playlist")
+			}
 
-		val resultM3u8Row =
+		val playlist =
 			resultFrom {
-				mongoTemplate.findOne(getM3u8Query, M3u8Table::class.java)
+				mongoTemplate.findOne(getPlaylistQuery, ChannelPlaylistTable::class.java)
 					?: return Failure(ChannelError.NotFound(channelId))
 			}.onFailure {
 				log.error(
-						"Error while get channel: ${it.reason.message}, \n" +
-								it.reason.stackTrace.joinToString("\n")
+					"Error while get playlist from channel: ${it.reason.message}, \n" +
+							it.reason.stackTrace.joinToString("\n")
 				)
+
+				return Failure(ChannelError.DatabaseError(channelId, it.reason))
+			}.playlist
+
+		return Success(playlist)
+	}
+
+	override fun updatePlaylist(channelId: ChannelID, newPlaylist: List<MusicID>): Result<Boolean, ChannelError> {
+		val findChannelQuery = Query(Criteria.where("channelId").`is`(channelId))
+		val updatePlaylist = Update().apply {
+			set("playlist", newPlaylist)
+		}
+
+		resultFrom {
+			mongoTemplate.updateFirst(findChannelQuery, updatePlaylist, ChannelTable::class.java)
+		}.onFailure {
+			log.error(
+				"Error while updating channel's music playlist from channel: $channelId: ${it.reason.message}, \n" +
+						it.reason.stackTrace.joinToString("\n")
+			)
+			return Failure(ChannelError.DatabaseError(channelId, it.reason))
+		}
+
+		return Success(true)
+	}
+
+	override fun getMusicStatus(channelId: ChannelID): Result<ChannelMusicStatus, ChannelError> {
+		val getCurrentMusicQuery = Query(Criteria.where("channelId").`is`(channelId))
+
+		val musicStatusRow =
+			resultFrom {
+				mongoTemplate.findOne(getCurrentMusicQuery, ChannelMusicStatusTable::class.java)
+					?: return Failure(ChannelError.NotFound(channelId))
+			}.onFailure {
+				log.error(
+					"Error while get current music from channel: ${it.reason.message}, \n" +
+							it.reason.stackTrace.joinToString("\n")
+				)
+
 				return Failure(ChannelError.DatabaseError(channelId, it.reason))
 			}
 
-		val timestamp = LocalDateTime.parse(resultM3u8Row.timestamp, DateTimeFormatter.ISO_DATE_TIME).plusSeconds(10)
-		val now = LocalDateTime.now()
-
-        if (now.isAfter(timestamp.plusSeconds(10))) {
-            return patchM3u8(resultM3u8Row, channelId)
-        }
-
-		return Success(M3u8.fromTableRow(resultM3u8Row))
+		return Success(ChannelMusicStatus.fromTableRow(musicStatusRow))
 	}
 
+	override fun updateMusicStatus(channelId: ChannelID, nextMusic: MusicID): Result<MusicID, ChannelError> {
+		val findChannelQuery = Query(Criteria.where("channelId").`is`(channelId))
+		val updateMusicStatus = Update().apply {
+			set("currentMusicId", nextMusic)
+			pop("playList", Update.Position.FIRST)
+			set("currentMusicStartTime", System.currentTimeMillis())
+		}
+
+		resultFrom {
+			mongoTemplate.updateFirst(findChannelQuery, updateMusicStatus, ChannelTable::class.java)
+		}.onFailure {
+			log.error(
+				"Error while updating channel's music status from channel: $channelId: ${it.reason.message}, \n" +
+						it.reason.stackTrace.joinToString("\n")
+			)
+			return Failure(ChannelError.DatabaseError(channelId, it.reason))
+		}
+
+		return Success(nextMusic)
+	}
+
+	override fun getM3u8(channelId: ChannelID, currentMusic: MusicID, musicOffset: Long): Result<String, ChannelError> {
+		val returnStr = StringBuilder()
+		returnStr.append("#EXTM3U\n")
+			.append("#EXTINF:10,\n")
+			.append("http://127.0.0.1:8080/download/sample_0\n")
+			.append("#EXTINF:10,\n")
+			.append("http://127.0.0.1:8080/download/sample_1\n")
+			.append("#EXTINF:10,\n")
+			.append("http://127.0.0.1:8080/download/sample_2\n")
+			.append("#EXT-X-ENDLIST")
+
+		return Success(returnStr.toString())
+	}
+
+	/*
     // only for test
-    private fun patchM3u8(resultM3u8Row: M3u8Table, channelId: ChannelID): Result<M3u8, ChannelError> {
+    private fun patchM3u8(resultM3u8Row: ChannelM3u8Table, channelId: ChannelID): Result<M3u8, ChannelError> {
         val tsList: List<String> = listOf("sample_0.ts", "sample_1.ts", "sample_2.ts", "sample_3.ts", "sample_4.ts")
 
 		val list: MutableList<String> = mutableListOf(resultM3u8Row.streamingFileList[1], resultM3u8Row.streamingFileList[2])
@@ -157,7 +230,7 @@ class ChannelRepositoryImpl(
 
         val resultM3u8Row =
                 resultFrom {
-                    mongoTemplate.findAndModify(getChannelQuery, update, option, M3u8Table::class.java)
+                    mongoTemplate.findAndModify(getChannelQuery, update, option, ChannelM3u8Table::class.java)
                             ?: return Failure(ChannelError.NotFound(channelId))
                 }.onFailure {
                     log.error(
@@ -183,4 +256,6 @@ class ChannelRepositoryImpl(
 
 		return Success(returnStr.toString())
 	}
+
+	 */
 }

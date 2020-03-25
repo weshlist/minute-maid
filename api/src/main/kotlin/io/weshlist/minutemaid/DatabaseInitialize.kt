@@ -42,6 +42,7 @@ class DatabaseInitialize(
 		musicService.add(MusicMeta("금요일에 만나요", "아이유", 150))      // music5
 		musicService.add(MusicMeta("이태원 프리덤", "UV", 150))      // music6
 		musicService.add(MusicMeta("하루끝", "아이유", 150))      // music7
+		musicService.add(MusicMeta("sample", "variousArtists", 500)) // music8
 
 		println(musicService.mget(listOf("music0", "music1")))
 
@@ -50,19 +51,23 @@ class DatabaseInitialize(
 		 */
 		println(channelService.join("user0", "사랑의 채널").get())   // channel0
 		println(channelService.join("user1", "사랑의 채널").get())
+		println(channelService.join("user2", "어둠의 채널").get())
+		println(channelService.join("user3", "어둠의 채널").get())
+		println(channelService.join("user4", "어둠의 채널").get())
 
 
 		/**
 		 * Add playlist by each user
 		 */
-		userService.requestMusic("user0", "music0")
-		userService.requestMusic("user1", "music1")
-		userService.requestMusic("user1", "music2")
-		userService.requestMusic("user1", "music3")
-		userService.requestMusic("user2", "music4")
-		userService.requestMusic("user3", "music5")
-		userService.requestMusic("user4", "music6")
-		userService.requestMusic("user4", "music7")
+		userService.requestMusic("channel0", "user0", "music0")
+		userService.requestMusic("channel0", "user0", "music8") // for test
+		userService.requestMusic("channel0", "user1", "music1")
+		userService.requestMusic("channel0", "user1", "music2")
+		userService.requestMusic("channel0", "user1", "music3")
+		userService.requestMusic("channel1", "user2", "music4")
+		userService.requestMusic("channel1", "user3", "music5")
+		userService.requestMusic("channel1", "user4", "music6")
+		userService.requestMusic("channel1", "user4", "music7")
 
 		println(channelService.getPlaylist("channel0"))
 

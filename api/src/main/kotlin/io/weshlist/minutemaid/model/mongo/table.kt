@@ -3,26 +3,27 @@ package io.weshlist.minutemaid.model.mongo
 import io.weshlist.minutemaid.model.Music
 import io.weshlist.minutemaid.utils.ChannelID
 import io.weshlist.minutemaid.utils.MusicID
+import io.weshlist.minutemaid.utils.Timestamp
 import io.weshlist.minutemaid.utils.UserID
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.io.Serializable
-import java.sql.Timestamp
 
 interface Table
 
+/**
+ * ChannelTable
+ */
 @Document(collection = "channel")
 data class ChannelTable(
 	@Id
 	var channelId: ChannelID,
 	var channelName: String,
 	var channelCreator: UserID,
-	var currentMusicId: MusicID?,
-	var playlist: List<Music>,
+	var playlist: List<MusicID>,
 	var userlist: List<UserID>,
-	var streamingUri: String = "wesh://streaming-uri/gg",
-	var streamingFileList: List<String>,
-	var timestamp: String
+	var currentMusicId: MusicID?,
+	var currentMusicStartTime: Timestamp?
 ) : Serializable, Table
 
 @Document(collection = "channel")
@@ -32,15 +33,40 @@ data class ChannelUserlistTable(
 	var userlist: List<UserID>
 ) : Serializable, Table
 
+@Document(collection = "channel")
+data class ChannelPlaylistTable(
+	@Id
+	var channelId: ChannelID,
+	var playlist: List<MusicID>
+) : Serializable, Table
+
+@Document(collection = "channel")
+data class ChannelMusicStatusTable(
+	@Id
+	var channelId: ChannelID,
+	var playlist: List<MusicID>,
+	var currentMusicId: MusicID?,
+	var currentMusicStartTime: Timestamp?
+) : Serializable, Table
+
+/**
+ * Music Table
+ */
 @Document(collection = "music")
 data class MusicTable(
 	@Id
 	var musicId: MusicID,
 	var musicName: String,
 	var artist: String,
-	var length: Int
+	var length: Int,
+	var streamingFileList: List<String> = listOf(),
+	var streamingFileChunk: Int = 10
+
 ) : Serializable, Table
 
+/**
+ * User Table
+ */
 @Document(collection = "user")
 data class UserTable(
 	@Id
@@ -50,17 +76,9 @@ data class UserTable(
 	var playlist: List<MusicID>
 ) : Serializable, Table
 
-@Document(collection = "music")
+@Document(collection = "user")
 data class UserPlaylistTable(
 	@Id
 	var userId: UserID,
 	var playlist: List<MusicID>
-) : Serializable, Table
-
-@Document(collection = "channel")
-data class M3u8Table(
-	@Id
-	var channelId: ChannelID,
-	var streamingFileList: List<String>,
-	var timestamp: String
 ) : Serializable, Table

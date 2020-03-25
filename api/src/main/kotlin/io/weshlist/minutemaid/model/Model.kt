@@ -3,9 +3,8 @@ package io.weshlist.minutemaid.model
 import io.weshlist.minutemaid.model.mongo.*
 import io.weshlist.minutemaid.utils.ChannelID
 import io.weshlist.minutemaid.utils.MusicID
+import io.weshlist.minutemaid.utils.Timestamp
 import io.weshlist.minutemaid.utils.UserID
-import org.springframework.data.annotation.Id
-import java.sql.Timestamp
 
 interface ConvertTable<T : Table, M> {
 	fun fromTableRow(table: T): M
@@ -19,10 +18,10 @@ data class Channel(
 	val channelId: ChannelID,
 	val channelName: String,
 	val channelCreator: UserID,
-	var currentMusic: Music? = null,
-	var playlist: List<Music> = emptyList(),
+	var playlist: List<MusicID> = emptyList(),
 	var userlist: List<UserID> = emptyList(),
-	val streamingUri: String = "wesh://streaming_uri/123123"
+	var currentMusic: MusicID? = null,
+	var currentMusicStartTime: Timestamp? = null
 ) {
 	companion object : ConvertTable<ChannelTable, Channel> {
 		override fun fromTableRow(table: ChannelTable): Channel {
@@ -33,7 +32,8 @@ data class Channel(
 				channelCreator = table.channelCreator,
 				playlist = table.playlist,
 				userlist = table.userlist,
-				streamingUri = table.streamingUri
+				currentMusic = table.currentMusicId,
+				currentMusicStartTime = table.currentMusicStartTime
 			)
 		}
 
@@ -44,30 +44,28 @@ data class Channel(
 }
 
 /**
- * M3U8
+ * Current Music from Channel
  */
-data class M3u8(
-	@Id
-	var channelId: ChannelID,
-	var streamingFileList: List<String>,
-	var timestamp: String
+data class ChannelMusicStatus(
+	var playlist: List<MusicID> = emptyList(),
+	var currentMusic: MusicID? = null,
+	var currentMusicStartTime: Timestamp? = null
 ) {
-	companion object : ConvertTable<M3u8Table, M3u8> {
-		override fun fromTableRow(table: M3u8Table): M3u8 {
+	companion object : ConvertTable<ChannelMusicStatusTable, ChannelMusicStatus> {
+		override fun fromTableRow(table: ChannelMusicStatusTable): ChannelMusicStatus {
 			// TOOD: currentMusic & playlist are needed to be update
-			return M3u8(
-					channelId = table.channelId,
-					streamingFileList = table.streamingFileList,
-					timestamp = table.timestamp
+			return ChannelMusicStatus(
+				playlist = table.playlist,
+				currentMusic = table.currentMusicId,
+				currentMusicStartTime = table.currentMusicStartTime
 			)
 		}
 
-		override fun fromTableRows(tables: List<M3u8Table>): List<M3u8> {
+		override fun fromTableRows(tables: List<ChannelMusicStatusTable>): List<ChannelMusicStatus> {
 			return tables.map(::fromTableRow)
 		}
 	}
 }
-
 
 /**
  * Music
