@@ -1,9 +1,12 @@
 package io.weshlist.minutemaid.controller
 
+import io.weshlist.minutemaid.controller.params.JoinChannelRequest
 import io.weshlist.minutemaid.model.Channel
 import io.weshlist.minutemaid.model.Music
 import io.weshlist.minutemaid.result.BaseError
 import io.weshlist.minutemaid.result.Result
+import io.weshlist.minutemaid.result.get
+import io.weshlist.minutemaid.result.onFailure
 import io.weshlist.minutemaid.service.ChannelService
 import io.weshlist.minutemaid.service.MusicSearchService
 import io.weshlist.minutemaid.utils.ChannelID
@@ -14,6 +17,11 @@ import io.weshlist.minutemaid.utils.toResponse
 import io.weshlist.minutemaid.utils.validator.ChannelValidator
 import io.weshlist.minutemaid.utils.validator.doValidate
 import io.weshlist.minutemaid.utils.validator.onFailure
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.Resource
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -21,15 +29,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-
-/*
-api
-1 . room - id empty - > create
-            exsists -> enter
-2. music - 추가 가능한 음악 목록 불러오기
-            - 음악 위시리스트에 추가
-            - 내가 추가한 음악 리스트 불러오기
- */
 
 @PrintLog
 @RestController
@@ -105,5 +104,23 @@ class ChannelController(
 		) onFailure { return Result.Failure(it).toResponse() }
 
 		return channelService.getPlaylist(channelId).toResponse()
+	}
+
+	@GetMapping(
+		value = ["/{channelId}/m3u8"],
+		produces = [MediaType.TEXT_PLAIN_VALUE]
+	)
+	fun getM3u8(
+		@PathVariable channelId: ChannelID
+	): ResponseEntity<Resource> {
+
+		val rst = channelService.getM3u8(channelId).onFailure { return ResponseEntity.notFound().build() }
+
+		println(rst)
+
+		return ResponseEntity.ok()
+			.header(HttpHeaders.CONTENT_TYPE, "application/x-mpegURL")
+			.header(HttpHeaders.CONTENT_DISPOSITION, "inline;filename=sample.m3u8")
+			.body(ByteArrayResource(rst.toByteArray()))
 	}
 }

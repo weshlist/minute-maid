@@ -1,11 +1,9 @@
 package io.weshlist.minutemaid.model
 
-import io.weshlist.minutemaid.model.mongo.ChannelTable
-import io.weshlist.minutemaid.model.mongo.MusicTable
-import io.weshlist.minutemaid.model.mongo.Table
-import io.weshlist.minutemaid.model.mongo.UserTable
+import io.weshlist.minutemaid.model.mongo.*
 import io.weshlist.minutemaid.utils.ChannelID
 import io.weshlist.minutemaid.utils.MusicID
+import io.weshlist.minutemaid.utils.Timestamp
 import io.weshlist.minutemaid.utils.UserID
 
 interface ConvertTable<T : Table, M> {
@@ -20,10 +18,10 @@ data class Channel(
 	val channelId: ChannelID,
 	val channelName: String,
 	val channelCreator: UserID,
-	var currentMusic: Music? = null,
-	var playlist: List<Music> = emptyList(),
+	var playlist: List<MusicID> = emptyList(),
 	var userlist: List<UserID> = emptyList(),
-	val streamingUri: String = "wesh://streaming_uri/123123"
+	var currentMusic: MusicID? = null,
+	var currentMusicStartTime: Timestamp? = null
 ) {
 	companion object : ConvertTable<ChannelTable, Channel> {
 		override fun fromTableRow(table: ChannelTable): Channel {
@@ -34,7 +32,8 @@ data class Channel(
 				channelCreator = table.channelCreator,
 				playlist = table.playlist,
 				userlist = table.userlist,
-				streamingUri = table.streamingUri
+				currentMusic = table.currentMusicId,
+				currentMusicStartTime = table.currentMusicStartTime
 			)
 		}
 
@@ -44,6 +43,29 @@ data class Channel(
 	}
 }
 
+/**
+ * Current Music from Channel
+ */
+data class ChannelMusicStatus(
+	var playlist: List<MusicID> = emptyList(),
+	var currentMusic: MusicID? = null,
+	var currentMusicStartTime: Timestamp? = null
+) {
+	companion object : ConvertTable<ChannelMusicStatusTable, ChannelMusicStatus> {
+		override fun fromTableRow(table: ChannelMusicStatusTable): ChannelMusicStatus {
+			// TOOD: currentMusic & playlist are needed to be update
+			return ChannelMusicStatus(
+				playlist = table.playlist,
+				currentMusic = table.currentMusicId,
+				currentMusicStartTime = table.currentMusicStartTime
+			)
+		}
+
+		override fun fromTableRows(tables: List<ChannelMusicStatusTable>): List<ChannelMusicStatus> {
+			return tables.map(::fromTableRow)
+		}
+	}
+}
 
 /**
  * Music

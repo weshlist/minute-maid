@@ -1,5 +1,6 @@
 package io.weshlist.minutemaid.controller
 
+import io.weshlist.minutemaid.controller.params.AddMusicReq
 import io.weshlist.minutemaid.result.BaseError
 import io.weshlist.minutemaid.result.Result
 import io.weshlist.minutemaid.service.MusicService
